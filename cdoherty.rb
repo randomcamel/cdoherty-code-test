@@ -1,8 +1,9 @@
 #!/usr/bin/env ruby
 
+require "logger"
 require "parallel"
 
-DICT_FILE = "short-dict.txt"
+DICT_FILE = ENV["DICT"] || "short-dict.txt"
 DEFAULT_NUM_PROCS = 7
 
 module Cdoherty
@@ -11,13 +12,16 @@ module Cdoherty
   class Graph
     def initialize
       @adj_list = {}
+      @log = Logger.new STDOUT
     end
 
     def add(v1, v2)
+      return if v1 == v2
       @adj_list[v1] ||= []
 
       v2 = [v2] unless v2.class == Array
       @adj_list[v1] |= v2    # pipe (|) on arrays performs a set union, to eliminate duplicates.
+      @log.debug "Added node (#{v1}, #{v1})"
     end
 
     def neighbors(v1)
@@ -43,11 +47,11 @@ module Cdoherty
 
       while q.size > 0
         v_current = q.shift
-        puts "about to visit '#{v_current}'"
+        @log.debug  "about to visit '#{v_current}'"
         processed[v_current] = true
         self.neighbors(v_current).each do |neighbor|
 
-          puts "processing node #{neighbor}" unless !processed[neighbor]
+          @log.debug "processing node #{neighbor}" unless !processed[neighbor]
 
           if !discovered[neighbor]
             q.push(neighbor)
@@ -55,10 +59,20 @@ module Cdoherty
             parents[neighbor] = v_current
           end
         end
-        puts "done processing node '#{v_current}'"
+        @log.debug  "done processing node '#{v_current}'"
       end
 
       return parents
+    end
+
+    def show_path(parents, start, target)
+      path = [target]
+      while parents[target] != start
+        path.push(parents[target])
+        target = parents[target]                  
+      end
+      path.push(start)
+      return path.reverse
     end
   end
 

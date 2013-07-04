@@ -61,6 +61,8 @@ class CdohertyTest < Scope::TestCase
       assert(@finder.valid_transition?("string1", "string2"), "Should be valid")
       refute(@finder.valid_transition?("string1", "strinh2"), "Hamming distance 2, should fail")
       refute(@finder.valid_transition?("stark", "smart"), "distance 2, should fail")
+      assert(@finder.valid_transition?("smack", "slack"))
+      assert(@finder.valid_transition?("slack", "smack"))
     end
 
     should "return correct, unfiltered list of next steps" do
@@ -93,11 +95,24 @@ class CdohertyTest < Scope::TestCase
 
   context "graph search" do
     setup do
-      @test_words = %w{smart start stark stack slack black blank bland brand braid brain smack }
+      @test_words = %w{smart start stark stack slack black blank bland brand braid brain } #smack szack
       @shortest_path = @test_words
 
       @builder = Cdoherty::GraphBuilder.new
       @graph = @builder.generate_graph(true)
+
+      @simple_parents = {
+        "start"=>"smart",
+        "stark"=>"start",
+        "stack"=>"stark",
+        "slack"=>"stack",
+        "black"=>"slack",
+        "blank"=>"black",
+        "bland"=>"blank",
+        "brand"=>"bland",
+        "braid"=>"brand",
+        "brain"=>"braid"
+      }
     end
 
     should "print data about the full graph" do
@@ -114,22 +129,20 @@ EOS
       end
     end
 
-    should "find the correct path through a simple graph" do
-      expected = {
-        "start"=>"smart",
-        "stark"=>"start",
-        "stack"=>"stark",
-        "slack"=>"stack",
-        "black"=>"slack",
-        "blank"=>"black",
-        "bland"=>"blank",
-        "brand"=>"bland",
-        "braid"=>"brand",
-        "brain"=>"braid"
-      }
+    should "correctly construct a path from a parents hash" do
+      expected_path = ["smart", "start", "stark", "stack", "slack", "black",
+                       "blank", "bland", "brand", "braid", "brain"]
 
-      parents = @graph.find_path(@test_words[0], @test_words[-1])
-      assert_equal(expected, parents)
+      actual_path = @graph.show_path(@simple_parents, expected_path[0], expected_path[-1])
+      assert_equal(expected_path, actual_path)
+    end
+
+    should "find the correct path through a simple graph" do
+      expected_parents = @simple_parents
+
+      start, target = @test_words[0], @test_words[-1]
+      actual_parents = @graph.find_path(start, target)
+      assert_equal(expected_parents, actual_parents)
     end
   end
 end
