@@ -10,17 +10,25 @@ module Cdoherty
 
   # a vertex is any object, but happens to be strings for us.
   class Graph
+
     def initialize
       @adj_list = {}
       @log = Logger.new STDOUT
+      @log.level = Logger::INFO
     end
 
     def add(v1, v2)
       return if v1 == v2
-      @adj_list[v1] ||= []
 
-      v2 = [v2] unless v2.class == Array
-      @adj_list[v1] |= v2    # pipe (|) on arrays performs a set union, to eliminate duplicates.
+      raise StandardError.new "v1 is an array #{v1.inspect}" if v1.class == Array
+      raise StandardError.new "v2 is an array #{v2.inspect}" if v2.class == Array
+
+      @adj_list[v1] ||= []
+      @adj_list[v2] ||= []
+
+      @adj_list[v1] |= [v2]    # pipe (|) on arrays performs a set union, to eliminate duplicates.
+      @adj_list[v2] |= [v1]
+      [v1, v2].each { |v| @adj_list[v].sort! }
       @log.debug "Added node (#{v1}, #{v1})"
     end
 

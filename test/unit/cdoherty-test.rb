@@ -20,7 +20,7 @@ class CdohertyTest < Scope::TestCase
       assert_equal([:sputnik], edges[:hrungnir])
     end
 
-    should "add multiple vertices to an edge" do
+    should "add multiple edges to a vertex" do
       @graph.add(:narf, :poit)
       @graph.add(:narf, :shpongle)
       edges = @graph.edges
@@ -34,19 +34,19 @@ class CdohertyTest < Scope::TestCase
     end
 
     should "add multiple neighbors at once" do
-      @graph.add(:narf, [:poit, :shpongle, :sputnik])
-      assert_equal([:poit, :shpongle, :sputnik], @graph.neighbors(:narf))
+      assert_raises(StandardError) { @graph.add(:narf, [:poit, :shpongle, :sputnik]) }
     end
 
-    should "not duplicate edges for a new vertex" do
-      @graph.add(:narf, [:poit, :poit])
+    should "not duplicate edges for a vertex" do
+      @graph.add(:narf, :poit)
+      @graph.add(:narf, :poit)
       assert_equal([:poit], @graph.neighbors(:narf))
     end
 
-    should "not duplicate edges for an existing vertex" do
-      @graph.add(:narf, [:poit])
-      @graph.add(:narf, [:poit])
+    should "make bidirectional edges" do
+      @graph.add(:narf, :poit)
       assert_equal([:poit], @graph.neighbors(:narf))
+      assert_equal([:narf], @graph.neighbors(:poit))
     end
   end
 
