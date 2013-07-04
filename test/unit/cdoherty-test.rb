@@ -50,7 +50,7 @@ class CdohertyTest < Scope::TestCase
     end
   end
 
-  context "helper functions" do
+  context "graph and word integration functions" do
     setup do
       @finder = Cdoherty::GraphBuilder.new
       @finder.words = %w{smart start stark stack slack black blank bland brand braid brain smack }
@@ -89,14 +89,47 @@ class CdohertyTest < Scope::TestCase
       graph = @finder.generate_graph
       assert_equal(expected, graph.edges)
     end
+  end
+
+  context "graph search" do
+    setup do
+      @test_words = %w{smart start stark stack slack black blank bland brand braid brain smack }
+      @shortest_path = @test_words
+
+      @builder = Cdoherty::GraphBuilder.new
+      @graph = @builder.generate_graph(true)
+    end
 
     should "print data about the full graph" do
       if true
-        builder = Cdoherty::GraphBuilder.new
-        graph = builder.generate_graph(true)
-        puts "Vertices: #{graph.edges.size}"
-        puts "Edges: #{graph.edges.values.inject(0) { |sum, a| sum += a.size }}"
+        vertex_ct = @graph.edges.size
+        edge_ct = @graph.edges.values.inject(0) { |sum, a| sum += a.size }
+        puts <<EOS
+
+Vertices: #{vertex_ct}
+Edges: #{edge_ct}
+EOS
+        assert(edge_ct > 0, "Graph has zero edges.")
+        assert(edge_ct > vertex_ct, "Edge count is <= vertex count (e=#{edge_ct}, v=#{vertex_ct})")
       end
+    end
+
+    should "find the correct path through a simple graph" do
+      expected = {
+        "start"=>"smart",
+        "stark"=>"start",
+        "stack"=>"stark",
+        "slack"=>"stack",
+        "black"=>"slack",
+        "blank"=>"black",
+        "bland"=>"blank",
+        "brand"=>"bland",
+        "braid"=>"brand",
+        "brain"=>"braid"
+      }
+
+      parents = @graph.find_path(@test_words[0], @test_words[-1])
+      assert_equal(expected, parents)
     end
   end
 end

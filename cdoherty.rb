@@ -2,7 +2,7 @@
 
 require "parallel"
 
-DICT_FILE = "medium-dict.txt"
+DICT_FILE = "short-dict.txt"
 DEFAULT_NUM_PROCS = 7
 
 module Cdoherty
@@ -28,7 +28,37 @@ module Cdoherty
       @adj_list
     end
 
-    def bfs(start, target)
+    def find_path(start, target, opts={})
+      return_all_paths = !!opts[:return_all_paths]   # !! is an idiom to convert values to boolean.
+
+      discovered = Hash.new(false)
+      processed = Hash.new(false)
+
+      parents = {}
+      q = []
+      v_current = start
+      q.push(v_current)
+      discovered[v_current] = true
+      parents = {}
+
+      while q.size > 0
+        v_current = q.shift
+        puts "about to visit '#{v_current}'"
+        processed[v_current] = true
+        self.neighbors(v_current).each do |neighbor|
+
+          puts "processing node #{neighbor}" unless !processed[neighbor]
+
+          if !discovered[neighbor]
+            q.push(neighbor)
+            discovered[neighbor] = true
+            parents[neighbor] = v_current
+          end
+        end
+        puts "done processing node '#{v_current}'"
+      end
+
+      return parents
     end
   end
 
