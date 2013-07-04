@@ -71,22 +71,17 @@ module Cdoherty
     def generate_graph(parallel=false)
       graph = Graph.new
 
-      if parallel
-        words_transitions =
-          Parallel.map(@words, :in_processes => DEFAULT_NUM_PROCS) do |word|
-          find_transitions(word)
-        end
-        @words.each_with_index do |word, i|
-          words_transitions[i].each do |transition|
-            graph.add(word, transition)
-          end
-        end
-      else
-        @words.each do |word|
-          transitions = find_transitions(word)
-          transitions.each do |neighbor|
-            graph.add(word, neighbor)
-          end
+      nprocs = parallel ? DEFAULT_NUM_PROCS : 0
+
+      # the parallel gem maintains the order of the results...
+      words_transitions =
+        Parallel.map(@words, :in_processes => nprocs) do |word|
+        find_transitions(word)
+      end
+      # ...so we can just iterate over the input array and it's the same index.
+      @words.each_with_index do |word, i|
+        words_transitions[i].each do |transition|
+          graph.add(word, transition)
         end
       end
       return graph
