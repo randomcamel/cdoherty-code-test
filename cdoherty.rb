@@ -1,9 +1,8 @@
 #!/usr/bin/env ruby
 
 require "parallel"
-require "set"
 
-DICT_FILE = "full-dict.txt"
+DICT_FILE = "medium-dict.txt"
 DEFAULT_NUM_PROCS = 8
 
 module Cdoherty
@@ -38,7 +37,6 @@ module Cdoherty
     attr_accessor :raw, :words
 
     def initialize
-      @seen = {}
       load_dict
     end
 
@@ -49,30 +47,25 @@ module Cdoherty
       return @raw, @words
     end
 
-    def create_regex(word)
-      pieces = []
-      for i in 0..word.length - 1 do
-        piece = word.clone
-        piece[i] = "."
-        pieces << piece
+    def valid_transition?(s1, s2)
+      diffs = 0
+      s1.length.times do |i|
+        if s1[i] != s2[i]
+          diffs += 1
+          return false if diffs > 1
+        end
       end
-      regex = pieces.join "|"
-      regex
+      return diffs == 1
     end
 
     def find_transitions(word)
-      regex = create_regex(word)
-
-      nexts = []
-      @words.each do |word|
-        if word =~ /#{regex}/ && !@seen.has_key?(word)
-          nexts << word
+      transitions = []
+      @words.each do |dict_word|
+        if valid_transition?(word, dict_word)
+          transitions << dict_word
         end
       end
-
-      # pull out the word itself. easier to do it here than check for it on every iteration.
-      nexts = nexts.reject { |w| w == word }.sort
-      return nexts
+      return transitions.reject { |w| w == word }.sort
     end
 
     def generate_graph

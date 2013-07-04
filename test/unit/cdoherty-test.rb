@@ -56,10 +56,11 @@ class CdohertyTest < Scope::TestCase
       @finder.words = %w{smart start stark stack slack black blank bland brand braid brain smack }
     end
 
-    should "return correct list of transition regexes" do
-      expected = ".ink|o.nk|oi.k|oin."
-      actual = @finder.create_regex("oink")
-      assert_equal(expected, actual)
+    should "determine valid transitions" do
+      refute(@finder.valid_transition?("string1", "string1"), "Same string")
+      assert(@finder.valid_transition?("string1", "string2"), "Should be valid")
+      refute(@finder.valid_transition?("string1", "strinh2"), "Hamming distance 2, should fail")
+      refute(@finder.valid_transition?("stark", "smart"), "distance 2, should fail")
     end
 
     should "return correct, unfiltered list of next steps" do
@@ -90,10 +91,12 @@ class CdohertyTest < Scope::TestCase
     end
 
     should "print data about the full graph" do
-      builder = Cdoherty::GraphBuilder.new
-      graph = builder.generate_graph
-      puts "Vertices: #{graph.edges.size}"
-      puts "Edges: #{graph.edges.values.inject(0) { |sum, a| sum += s.size }}"
+      if true
+        builder = Cdoherty::GraphBuilder.new
+        graph = builder.generate_graph
+        puts "Vertices: #{graph.edges.size}"
+        puts "Edges: #{graph.edges.values.inject(0) { |sum, a| sum += a.size }}"
+      end
     end
   end
 end
