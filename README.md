@@ -52,7 +52,9 @@ The `parallel` gem abstracts that work away, and you can read more about it
 - There are three dictionaries, named appropriately. The full list was pulled with the
    command `egrep -e '^[a-z]{5}$' /usr/share/dict/words`.
 
-That's it!
+- Ruby is unfortunately very environment-dependent. If you'd like help running it, please
+  let me know. I tried running it in a Vagrant VM and was defeated by the Ruby-Ubuntu
+  intersections.
 
 Chris Doherty
 chris [at] randomcamel.net
