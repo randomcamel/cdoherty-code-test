@@ -3,7 +3,7 @@
 require "parallel"
 
 DICT_FILE = "medium-dict.txt"
-DEFAULT_NUM_PROCS = 8
+DEFAULT_NUM_PROCS = 7
 
 module Cdoherty
 
@@ -68,12 +68,25 @@ module Cdoherty
       return transitions.reject { |w| w == word }.sort
     end
 
-    def generate_graph
+    def generate_graph(parallel=false)
       graph = Graph.new
-      @words.each do |word|
-        transitions = find_transitions(word)
-        transitions.each do |neighbor|
-          graph.add(word, neighbor)
+
+      if parallel
+        words_transitions =
+          Parallel.map(@words, :in_processes => DEFAULT_NUM_PROCS) do |word|
+          find_transitions(word)
+        end
+        @words.each_with_index do |word, i|
+          words_transitions[i].each do |transition|
+            graph.add(word, transition)
+          end
+        end
+      else
+        @words.each do |word|
+          transitions = find_transitions(word)
+          transitions.each do |neighbor|
+            graph.add(word, neighbor)
+          end
         end
       end
       return graph

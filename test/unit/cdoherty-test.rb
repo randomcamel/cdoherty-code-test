@@ -93,7 +93,7 @@ class CdohertyTest < Scope::TestCase
     should "print data about the full graph" do
       if true
         builder = Cdoherty::GraphBuilder.new
-        graph = builder.generate_graph
+        graph = builder.generate_graph(true)
         puts "Vertices: #{graph.edges.size}"
         puts "Edges: #{graph.edges.values.inject(0) { |sum, a| sum += a.size }}"
       end
