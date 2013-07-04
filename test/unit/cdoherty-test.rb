@@ -119,7 +119,7 @@ class CdohertyTest < Scope::TestCase
       if true
         vertex_ct = @graph.edges.size
         edge_ct = @graph.edges.values.inject(0) { |sum, a| sum += a.size }
-        puts <<EOS
+        <<EOS
 
 Vertices: #{vertex_ct}
 Edges: #{edge_ct}
@@ -146,7 +146,14 @@ EOS
         assert_equal(expected_parents, actual_parents)
       end
 
-      @graph.write_to_file
+    end
+
+    should "find path in more complex graph" do
+      expected_path = %w{ blaze blame flame }
+
+      start, target = expected_path[0], expected_path[-1]
+      actual_path = @graph.find_path(start, target)
+      assert_equal(expected_path, actual_path)
     end
   end
 end

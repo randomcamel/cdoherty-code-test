@@ -51,7 +51,7 @@ module Cdoherty
     end
 
     def find_path(start, target, opts={})
-      return_all_paths = !!opts[:return_all_paths]   # !! is an idiom to convert values to boolean.
+      return_all_parents = !!opts[:return_all_parents]   # !! is an idiom to convert values to boolean.
 
       discovered = Hash.new(false)
       processed = Hash.new(false)
@@ -75,12 +75,18 @@ module Cdoherty
             q.push(neighbor)
             discovered[neighbor] = true
             parents[neighbor] = v_current
+
+            break if v_current == target && !return_all_parents
           end
         end
         @log.debug  "done processing node '#{v_current}'"
       end
 
-      return parents
+      if return_all_parents
+        return parents
+      else
+        return show_path(parents, start, target)
+      end
     end
 
     def show_path(parents, start, target)
