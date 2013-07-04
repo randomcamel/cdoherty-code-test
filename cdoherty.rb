@@ -1,5 +1,6 @@
 #!/usr/bin/env ruby
 
+require "yaml"
 require "logger"
 require "parallel"
 
@@ -12,9 +13,18 @@ module Cdoherty
   class Graph
 
     def initialize
-      @adj_list = {}
       @log = Logger.new STDOUT
       @log.level = Logger::INFO
+
+      @cache_file = "#{DICT_FILE}.yaml"
+
+      if File.exists?(@cache_file)
+        @log.info "Loading YAML from #{@cache_file}"
+        @adj_list = load_from_file
+      else
+        @adj_list = {}
+      end
+
     end
 
     def add(v1, v2)
@@ -82,21 +92,39 @@ module Cdoherty
       path.push(start)
       return path.reverse
     end
+
+    def write_to_file
+      File.open(@cache_file, "w") do |out|
+        YAML.dump(@adj_list, out)
+      end
+    end
+
+    def load_from_file
+      struct = nil
+      File.open(@cache_file) do |data|
+        struct = YAML.load(data)
+      end
+      return struct
+    end
   end
 
   class GraphBuilder
 
-    attr_accessor :raw, :words
+    attr_accessor :words
 
-    def initialize
-      load_dict
+    def initialize(wordlist=nil)
+      if wordlist
+        @words = wordlist
+      else
+        @words = load_dict
+      end
     end
 
     # generate the full dict at any time with `egrep -e '^[a-z]{5}$' /usr/share/dict/words`.
     def load_dict
-      @raw = File.read(DICT_FILE)
-      @words = raw.split("\n").map { |word| word.strip }.reject { |word| word.nil? || word.length == 0 }
-      return @raw, @words
+      raw = File.read(DICT_FILE)
+      words = raw.split("\n").map { |word| word.strip }.reject { |word| word.nil? || word.length == 0 }
+      return words
     end
 
     def valid_transition?(s1, s2)
