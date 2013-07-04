@@ -55,6 +55,10 @@ module Cdoherty
     def find_path(start, target, opts={})
       return_all_parents = !!opts[:return_all_parents]   # !! is an idiom to convert values to boolean.
 
+      [start, target].each do |arg|
+        abort "Word '#{arg}' is unknown!" unless @adj_list.has_key?(arg)
+      end
+
       discovered = Hash.new(false)
       processed = Hash.new(false)
 
@@ -126,6 +130,7 @@ module Cdoherty
       else
         @words = load_dict
       end
+      puts "words: #{@words.size}"
     end
 
     # generate the full dict at any time with `egrep -e '^[a-z]{5}$' /usr/share/dict/words`.
@@ -192,7 +197,17 @@ EOS
   start, target, dict_file = *ARGV
   if start.size != 5 || target.size != 5
     abort "This program only supports words of exactly 5 letters."
-  elsif dict_file && !File.exists?(dict_file)
-    abort "Cannot find word list '#{dict_file}'"
   end
+  if dict_file && !File.exists?(dict_file)
+    abort "Cannot find word list '#{dict_file}'"
+  else
+    DICT_FILE = dict_file
+  end
+
+
+  builder = Cdoherty::GraphBuilder.new
+  [start, target].each do |arg|
+    abort "Word '#{arg}' is unknown!" unless builder.contains?(arg)
+  end
+  graph = builder.generate_graph
 end
