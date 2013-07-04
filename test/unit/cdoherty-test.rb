@@ -52,8 +52,8 @@ class CdohertyTest < Scope::TestCase
 
   context "graph and word integration functions" do
     setup do
-      @finder = Cdoherty::GraphBuilder.new
-      @finder.words = %w{smart start stark stack slack black blank bland brand braid brain smack }
+      @words = %w{smart start stark stack slack black blank bland brand braid brain smack }
+      @finder = Cdoherty::GraphBuilder.new(@words)
     end
 
     should "determine valid transitions" do
