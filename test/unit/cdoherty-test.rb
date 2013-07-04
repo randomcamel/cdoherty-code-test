@@ -52,7 +52,7 @@ class CdohertyTest < Scope::TestCase
 
   context "graph and word integration functions" do
     setup do
-      @words = %w{smart start stark stack slack black blank bland brand braid brain smack }
+      @words = %w{smart start stark stack slack black blank bland brand braid brain smack fakes fakez}
       @builder = Cdoherty::GraphBuilder.new(@words)
     end
 
@@ -91,7 +91,9 @@ class CdohertyTest < Scope::TestCase
         "brand" => ["bland", "braid"],
         "braid" => ["brain", "brand"],
         "brain" => ["braid"],
-        "smack" => ["slack", "stack"]
+        "smack" => ["slack", "stack"],
+        "fakes"=>["fakez"],
+        "fakez"=>["fakes"],
       }
       graph = @builder.generate_graph
       assert_equal(expected, graph.edges)
@@ -100,11 +102,11 @@ class CdohertyTest < Scope::TestCase
 
   context "graph search" do
     setup_once do
-      @@test_words = %w{smart start stark stack slack black blank bland brand braid brain } #smack szack
+      @@test_words = %w{smart start stark stack slack black blank bland brand braid brain fakes fakez}
       @@shortest_path = @test_words
 
-      @@builder = Cdoherty::GraphBuilder.new
-      @@graph = @@builder.generate_graph(true)
+      @@builder = Cdoherty::GraphBuilder.new(@@test_words)
+      @@graph = @@builder.generate_graph
 
       @@simple_parents = {
         "start"=>"smart",
@@ -124,32 +126,34 @@ class CdohertyTest < Scope::TestCase
       expected_path = ["smart", "start", "stark", "stack", "slack", "black",
                        "blank", "bland", "brand", "braid", "brain"]
 
-      actual_path = @@graph.show_path(@@simple_parents, expected_path[0], expected_path[-1])
+      actual_path = @@graph.show_path(@@simple_parents, "smart", "brain")
       assert_equal(expected_path, actual_path)
     end
 
-    should "find the correct path through a simple graph" do
+    should "find the correct path and parent list through a simple graph" do
       expected_parents = @@simple_parents
+      expected_path = ["smart", "start", "stark", "stack", "slack", "black", "blank", "bland", "brand", "braid", "brain"]
 
-      if false
-        start, target = @@test_words[0], @@test_words[-1]
-        actual_parents = @@graph.find_path(start, target)
-        assert_equal(expected_parents, actual_parents)
-      end
+      start, target = "smart", "brain"
+      actual_parents = @@graph.find_path(start, target, :return_all_parents => true)
+      assert_equal(expected_parents, actual_parents)
 
-    end
-
-    should "find path in more complex graph" do
-      expected_path = %w{ blaze blame flame }
-
-      start, target = expected_path[0], expected_path[-1]
       actual_path = @@graph.find_path(start, target)
       assert_equal(expected_path, actual_path)
+    end
+
+    should "fail to find a path where none exists" do
+      start, target = "smart", "fakez"
+      actual_path = @@graph.find_path(start, target)
+      assert_equal([], actual_path)
     end
 
     should "refuse to operate on unknown words" do
       real = "craze"
       fake = "gragh"
+      [ [real, fake], [fake, real] ].each do |arg_pair|
+        assert_raises(StandardError) { @@graph.find_path(*arg_pair) }
+      end
     end
   end
 end

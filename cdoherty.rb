@@ -3,7 +3,6 @@
 require "yaml"
 require "logger"
 require "parallel"
-require "trollop"
 
 DICT_FILE = ENV["DICT"] || "short-dict.txt"
 DEFAULT_NUM_PROCS = 7
@@ -56,7 +55,7 @@ module Cdoherty
       return_all_parents = !!opts[:return_all_parents]   # !! is an idiom to convert values to boolean.
 
       [start, target].each do |arg|
-        abort "Word '#{arg}' is unknown!" unless @adj_list.has_key?(arg)
+        raise StandardError.new "No transitions to '#{arg}' found in the graph" unless @adj_list.has_key?(arg)
       end
 
       discovered = Hash.new(false)
@@ -85,7 +84,7 @@ module Cdoherty
             break if v_current == target && !return_all_parents
           end
         end
-        @log.debug  "done processing node '#{v_current}'"
+        @log.debug  "done processing node '#{v_current}' (q=#{q.inspect})"
       end
 
       if return_all_parents
@@ -96,12 +95,19 @@ module Cdoherty
     end
 
     def show_path(parents, start, target)
+      # there are other failure modes here, left as an exercise for the reader.
+      if !parents.has_key?(target)
+        return []
+      end
+
       path = [target]
       while parents[target] != start
         path.push(parents[target])
-        target = parents[target]                  
+        target = parents[target]
       end
       path.push(start)
+
+      # this could use #unshift and avoid the reversal, but #push is more intuitive.
       return path.reverse
     end
 
@@ -130,7 +136,6 @@ module Cdoherty
       else
         @words = load_dict
       end
-      puts "words: #{@words.size}"
     end
 
     # generate the full dict at any time with `egrep -e '^[a-z]{5}$' /usr/share/dict/words`.
@@ -165,7 +170,7 @@ module Cdoherty
       return transitions.reject { |w| w == word }.sort
     end
 
-    def generate_graph(parallel=false)
+    def generate_graph(parallel=true)
       graph = Graph.new
 
       nprocs = parallel ? DEFAULT_NUM_PROCS : 0
@@ -204,10 +209,21 @@ EOS
     DICT_FILE = dict_file
   end
 
-
   builder = Cdoherty::GraphBuilder.new
   [start, target].each do |arg|
     abort "Word '#{arg}' is unknown!" unless builder.contains?(arg)
   end
+  log = Logger.new STDOUT
+
+  log.info "Building a graph from #{builder.words.size} words..."
   graph = builder.generate_graph
+
+  log.info "Searching #{graph.edges.size} word transitions for a #{start} --> #{target} path..."
+  path = graph.find_path(start, target)
+
+  if path.size > 1
+    log.info "Found path #{path.inspect}!"
+  else
+    log.info "Found no path from #{start} to #{target}. :-("
+  end
 end
