@@ -1,7 +1,6 @@
 
 require "minitest/autorun"
 require "pp"
-require "rr"
 require "scope"
 
 require "./cdoherty"

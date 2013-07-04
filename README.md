@@ -20,6 +20,8 @@ As presented:
 
 - The `parallel` gem, available by typing `sudo gem install parallel`.
 
+- The `scope` gem.
+
 
 ## Why do I need to install a gem?
 
@@ -27,8 +29,9 @@ Like its kindred Perl and Python, Ruby has a global interpreter lock which means
 threads are interpreter-scheduled ("green") threads, entirely invisible to the operating
 system. You can spawn as many Ruby threads as you like, and you'll only be using a single
 CPU. (Threads in the JRuby interpreter are CPU-scheduled JVM threads, but requiring that
-you use a specific Ruby version seemed a bit much.) You can see this if you change the
-GraphBuilder's `:in_processes` parameter to Parallel to `:in_threads`.
+you use a specific Ruby implementation seemed a bit much.) You can see this in action, if you change
+the GraphBuilder's `:in_processes` parameter to Parallel to `:in_threads`, then run the
+script again.
 
 This means that to go multi-core in Ruby, you have to spawn multiple Unix
 processes. Coordinating work between Unix processes is:
@@ -42,6 +45,7 @@ c. Not something I've done a lot of.
 The `parallel` gem abstracts that work away, and you can read more about it
 [here](https://github.com/grosser/parallel).
 
+`scope` is the unit testing framework we use at work.
 
 ## Okay, gem's installed. How do I run this?
 
