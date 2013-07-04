@@ -53,23 +53,23 @@ class CdohertyTest < Scope::TestCase
   context "graph and word integration functions" do
     setup do
       @words = %w{smart start stark stack slack black blank bland brand braid brain smack }
-      @finder = Cdoherty::GraphBuilder.new(@words)
+      @builder = Cdoherty::GraphBuilder.new(@words)
     end
 
     should "determine valid transitions" do
-      refute(@finder.valid_transition?("string1", "string1"), "Same string")
-      assert(@finder.valid_transition?("string1", "string2"), "Should be valid")
-      refute(@finder.valid_transition?("string1", "strinh2"), "Hamming distance 2, should fail")
-      refute(@finder.valid_transition?("stark", "smart"), "distance 2, should fail")
-      assert(@finder.valid_transition?("smack", "slack"))
-      assert(@finder.valid_transition?("slack", "smack"))
+      refute(@builder.valid_transition?("string1", "string1"), "Same string")
+      assert(@builder.valid_transition?("string1", "string2"), "Should be valid")
+      refute(@builder.valid_transition?("string1", "strinh2"), "Hamming distance 2, should fail")
+      refute(@builder.valid_transition?("stark", "smart"), "distance 2, should fail")
+      assert(@builder.valid_transition?("smack", "slack"))
+      assert(@builder.valid_transition?("slack", "smack"))
     end
 
     should "return correct, unfiltered list of next steps" do
       start = "stack"
       expected = %w{slack smack stark}
 
-      actual = @finder.find_transitions(start)
+      actual = @builder.find_transitions(start)
       assert_equal(expected, actual)
     end
 
@@ -88,7 +88,7 @@ class CdohertyTest < Scope::TestCase
         "brain" => ["braid"],
         "smack" => ["slack", "stack"]
       }
-      graph = @finder.generate_graph
+      graph = @builder.generate_graph
       assert_equal(expected, graph.edges)
     end
   end
