@@ -3,6 +3,7 @@
 require "yaml"
 require "logger"
 require "parallel"
+require "trollop"
 
 DICT_FILE = ENV["DICT"] || "short-dict.txt"
 DEFAULT_NUM_PROCS = 7
@@ -30,6 +31,7 @@ module Cdoherty
     def add(v1, v2)
       return if v1 == v2
 
+      # guard against previous features.
       raise StandardError.new "v1 is an array #{v1.inspect}" if v1.class == Array
       raise StandardError.new "v2 is an array #{v2.inspect}" if v2.class == Array
 
@@ -133,6 +135,10 @@ module Cdoherty
       return words
     end
 
+    def contains?(candidate)
+      @words.include?(candidate)
+    end
+
     def valid_transition?(s1, s2)
       diffs = 0
       s1.length.times do |i|
@@ -175,5 +181,18 @@ module Cdoherty
   end
 end
 
-start = "smart"
-FINAL = "brain"
+if __FILE__ == $0
+  if ARGV.size < 2
+    puts <<EOS
+Usage: #{$0} <starting word> <ending word> [word file]
+EOS
+    exit 1
+  end
+
+  start, target, dict_file = *ARGV
+  if start.size != 5 || target.size != 5
+    abort "This program only supports words of exactly 5 letters."
+  elsif dict_file && !File.exists?(dict_file)
+    abort "Cannot find word list '#{dict_file}'"
+  end
+end

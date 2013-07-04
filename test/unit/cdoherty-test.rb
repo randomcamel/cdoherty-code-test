@@ -33,7 +33,7 @@ class CdohertyTest < Scope::TestCase
       assert_equal([:poit, :shpongle], @graph.neighbors(:narf))
     end
 
-    should "add multiple neighbors at once" do
+    should "refuse to add multiple neighbors at once" do
       assert_raises(StandardError) { @graph.add(:narf, [:poit, :shpongle, :sputnik]) }
     end
 
@@ -54,6 +54,11 @@ class CdohertyTest < Scope::TestCase
     setup do
       @words = %w{smart start stark stack slack black blank bland brand braid brain smack }
       @builder = Cdoherty::GraphBuilder.new(@words)
+    end
+
+    should "accurately determine word presence" do
+      assert(@builder.contains?("start"), "Builder erroneously claims not to know 'start'.")
+      refute(@builder.contains?("gragh"), "Builder erroneously claims to know 'gragh'.")
     end
 
     should "determine valid transitions" do
@@ -94,14 +99,14 @@ class CdohertyTest < Scope::TestCase
   end
 
   context "graph search" do
-    setup do
-      @test_words = %w{smart start stark stack slack black blank bland brand braid brain } #smack szack
-      @shortest_path = @test_words
+    setup_once do
+      @@test_words = %w{smart start stark stack slack black blank bland brand braid brain } #smack szack
+      @@shortest_path = @test_words
 
-      @builder = Cdoherty::GraphBuilder.new
-      @graph = @builder.generate_graph(true)
+      @@builder = Cdoherty::GraphBuilder.new
+      @@graph = @@builder.generate_graph(true)
 
-      @simple_parents = {
+      @@simple_parents = {
         "start"=>"smart",
         "stark"=>"start",
         "stack"=>"stark",
@@ -115,34 +120,20 @@ class CdohertyTest < Scope::TestCase
       }
     end
 
-    should "print data about the full graph" do
-      if true
-        vertex_ct = @graph.edges.size
-        edge_ct = @graph.edges.values.inject(0) { |sum, a| sum += a.size }
-        <<EOS
-
-Vertices: #{vertex_ct}
-Edges: #{edge_ct}
-EOS
-        assert(edge_ct > 0, "Graph has zero edges.")
-        assert(edge_ct > vertex_ct, "Edge count is <= vertex count (e=#{edge_ct}, v=#{vertex_ct})")
-      end
-    end
-
     should "correctly construct a path from a parents hash" do
       expected_path = ["smart", "start", "stark", "stack", "slack", "black",
                        "blank", "bland", "brand", "braid", "brain"]
 
-      actual_path = @graph.show_path(@simple_parents, expected_path[0], expected_path[-1])
+      actual_path = @@graph.show_path(@@simple_parents, expected_path[0], expected_path[-1])
       assert_equal(expected_path, actual_path)
     end
 
     should "find the correct path through a simple graph" do
-      expected_parents = @simple_parents
+      expected_parents = @@simple_parents
 
       if false
-        start, target = @test_words[0], @test_words[-1]
-        actual_parents = @graph.find_path(start, target)
+        start, target = @@test_words[0], @@test_words[-1]
+        actual_parents = @@graph.find_path(start, target)
         assert_equal(expected_parents, actual_parents)
       end
 
@@ -152,8 +143,13 @@ EOS
       expected_path = %w{ blaze blame flame }
 
       start, target = expected_path[0], expected_path[-1]
-      actual_path = @graph.find_path(start, target)
+      actual_path = @@graph.find_path(start, target)
       assert_equal(expected_path, actual_path)
+    end
+
+    should "refuse to operate on unknown words" do
+      real = "craze"
+      fake = "gragh"
     end
   end
 end
