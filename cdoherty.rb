@@ -1,8 +1,8 @@
 #!/usr/bin/env ruby
 
-require "yaml"
 require "logger"
 require "parallel"
+require "yaml"
 
 DICT_FILE = ENV["DICT"] || "short-dict.txt"
 DEFAULT_NUM_PROCS = 7
@@ -30,7 +30,7 @@ module Cdoherty
     def add(v1, v2)
       return if v1 == v2
 
-      # guard against previous features.
+      # guard against previous features, since removed.
       raise StandardError.new "v1 is an array #{v1.inspect}" if v1.class == Array
       raise StandardError.new "v2 is an array #{v2.inspect}" if v2.class == Array
 
