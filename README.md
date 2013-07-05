@@ -23,15 +23,16 @@ As presented:
 - The `scope` gem.
 
 
-## Why do I need to install a gem?
+## What's the gem for?
 
-Like its kindred Perl and Python, Ruby has a global interpreter lock which means that Ruby
-threads are interpreter-scheduled ("green") threads, entirely invisible to the operating
-system. You can spawn as many Ruby threads as you like, and you'll only be using a single
-CPU. (Threads in the JRuby interpreter are CPU-scheduled JVM threads, but requiring that
-you use a specific Ruby implementation seemed a bit much.) You can see this in action, if you change
-the GraphBuilder's `:in_processes` parameter to Parallel to `:in_threads`, then run the
-script again.
+Like its kindred Python--and Perl, [sort of](http://perldoc.perl.org/threads.html)--Ruby
+has a global interpreter lock which means that Ruby threads are interpreter-scheduled
+("green") threads, entirely invisible to the operating system. You can spawn as many Ruby
+threads as you like, and you'll only be using a single CPU. (Threads in the JRuby
+interpreter are CPU-scheduled JVM threads, but requiring that you use a specific Ruby
+implementation seemed a bit much.) You can see this in action, if you change the
+GraphBuilder's `:in_processes` parameter to Parallel to `:in_threads`, then run the script
+again.
 
 This means that to go multi-core in Ruby, you have to spawn multiple Unix
 processes. Coordinating work between Unix processes is:
@@ -47,19 +48,19 @@ The `parallel` gem abstracts that work away, and you can read more about it
 
 `scope` is the unit testing framework we use at work.
 
-## Okay, gem's installed. How do I run this?
+## Running the code.
 
-- You can run `rake test` to run the tests.
+- You can run `rake test` to run the tests, or `ruby test/unit/cdoherty-test.rb`.
 
 - Simply execute `./cdoherty.rb` for a usage message.
 
 - There are three dictionaries, named appropriately. The full list was pulled with the
    command `egrep -e '^[a-z]{5}$' /usr/share/dict/words`.
 
-- Ruby is unfortunately very environment-dependent. If you'd like help running it, please
-  let me know. I tried running it in a Vagrant VM and was defeated by the Ruby-Ubuntu
-  intersections.
+- Ruby is unfortunately very environment-dependent. If it doesn't work out of the box, it
+   may need a `bundle install` and `bundle exec`.
 
 Chris Doherty
+
 chris [at] randomcamel.net
 
